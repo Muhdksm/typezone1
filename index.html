@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Super Typing Speed Website</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>    :root {
+      --main-bg: #f7f7f7;
+      --main-txt: #222;
+      --accent: #0099ff;
+      --error: #ff4444;
+      --success: #00cc77;
+      --dark-bg: #222;
+      --dark-txt: #f7f7f7;
+      --timer-bg: #e0e0e0;
+      --timer-dark: #333;
+      --font-main: 'Segoe UI', Arial, sans-serif;
+    }
+    body {
+      margin: 0;
+      font-family: var(--font-main);
+      background: var(--main-bg);
+      color: var(--main-txt);
+      transition: background 0.2s, color 0.2s;
+    }
+    body.dark {
+      background: var(--dark-bg);
+      color: var(--dark-txt);
+    }
+    .container {
+      max-width: 900px;
+      margin: 40px auto;
+      background: #fff;
+      box-shadow: 0 0 24px rgba(0,0,0,0.08);
+      border-radius: 16px;
+      padding: 32px;
+      transition: background 0.2s;
+    }
+    body.dark .container {
+      background: #262b32;
+    }
+    h1 {
+      text-align: center;
+      font-weight: 700;
+      font-size: 2.2rem;
+      margin-bottom: 12px;
+    }
+    .controls, .stats, .leaderboard, .mistyped, .chart {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+    .controls select, .controls button {
+      padding: 8px 16px;
+      font-size: 1rem;
+      border-radius: 8px;
+      border: none;
+      margin: 2px;
+      background: var(--accent);
+      color: #fff;
+      cursor: pointer;
+      transition: 0.18s;
+    }
+    .controls select {
+      background: #eee;
+      color: var(--main-txt);
+    }
+    body.dark .controls select {
+      background: #333;
+      color: var(--dark-txt);
+    }
+    .controls button:hover, .theme-btn.selected {
+      background: var(--success);
+    }
+    .typing-area {
+      min-height: 120px;
+      padding: 24px;
+      border-radius: 16px;
+      font-size: 1.4rem;
+      background: #f5f5ff;
+      margin-bottom: 20px;
+      user-select: none;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.04);
+      word-break: break-word;
+      letter-spacing: 0.02em;
+      transition: background 0.2s;
+    }
+    body.dark .typing-area {
+      background: #23233a;
+    }
+    .typing-area .correct {
+      color: var(--success);
+      background: none;
+    }
+    .typing-area .incorrect {
+      color: var(--error);
+      background: none;
+      animation: shake 0.2s;
+    }
+    @keyframes shake {
+      0% { margin-left: 0px; }
+      25% { margin-left: -2px; }
+      50% { margin-left: 2px; }
+      100% { margin-left: 0px; }
+    }
+    .typing-area .current {
+      background: var(--accent);
+      color: #fff;
+      border-radius: 4px;
+      padding: 2px 4px;
+      transition: 0.1s;
+    }
+    .input-area {
+      width: 100%;
+      padding: 12px;
+      font-size: 1.2rem;
+      border: 2px solid var(--accent);
+      border-radius: 8px;
+      margin-bottom: 24px;
+      outline: none;
+      background: #fafaff;
+      color: var(--main-txt);
+      transition: border-color 0.2s, background 0.2s;
+    }
+    body.dark .input-area {
+      background: #222;
+      color: var(--dark-txt);
+      border-color: var(--success);
+    }
+    .stats span {
+      background: var(--timer-bg);
+      border-radius: 12px;
+      padding: 6px 14px;
+      font-weight: 600;
+      font-size: 1.1rem;
+    }
+    body.dark .stats span {
+      background: var(--timer-dark);
+    }
+    .progress-bar {
+      position: relative;
+      width: 100%;
+      height: 18px;
+      background: #e0e0e0;
+      border-radius: 9px;
+      margin-bottom: 16px;
+      overflow: hidden;
+    }
+    body.dark .progress-bar {
+      background: #333;
+    }
+    .progress-inner {
+      position: absolute;
+      left: 0; top: 0;
+      height: 100%;
+      background: var(--accent);
+      border-radius: 9px;
+      width: 0;
+      transition: width 0.25s;
+    }
+    .mistyped {
+      flex-direction: column;
+      align-items: flex-start;
+      margin-bottom: 16px;
+    }
+    .mistyped h3 {
+      margin-bottom: 4px;
+      font-size: 1rem;
+      font-weight: 700;
+    }
+    .mistyped span {
+      font-size: 1rem;
+      color: var(--error);
+      margin-right: 7px;
+    }
+    .leaderboard {
+      flex-direction: column;
+      align-items: flex-start;
+      background: #e7f9ff;
+      border-radius: 12px;
+      padding: 16px;
+      width: 100%;
+      margin-bottom: 24px;
+    }
+    body.dark .leaderboard {
+      background: #333;
+    }
+    .leaderboard h3 {
+      margin-bottom: 4px;
+      font-size: 1rem;
+    }
+    .leaderboard ol {
+      padding-left: 20px;
+    }
+    .theme-btn {
+      padding: 4px 12px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      background: #f0f0f0;
+      color: #222;
+      margin: 2px;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+    body.dark .theme-btn {
+      background: #444;
+      color: #fff;
+      border-color: #888;
+    }
+    .theme-btn.selected {
+      border-color: var(--accent);
+      background: var(--accent);
+      color: #fff;
+    }
+    .chart {
+      width: 100%;
+      min-height: 120px;
+      background: #e3e3ff;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      padding: 12px;
+      box-sizing: border-box;
+      overflow-x: auto;
+      position: relative;
+    }
+    body.dark .chart {
+      background: #222;
+    }
+    #wpmChart {
+      width: 100%;
+      height: 100px;
+    }
+    .motivational {
+      position: fixed;
+      top: 40px;
+      right: 40px;
+      background: var(--success);
+      color: #fff;
+      font-weight: 700;
+      padding: 12px 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.15);
+      opacity: 0;
+      z-index: 1000;
+      transition: opacity 0.3s;
+      pointer-events: none;
+    }
+    .motivational.show {
+      opacity: 1;
+      pointer-events: all;
+    }
+    @media (max-width: 600px) {
+      .container { padding: 12px; }
+      h1 { font-size: 1.2rem; }
+      .controls { flex-direction: column; }
+      .typing-area { font-size: 1.1rem; padding: 8px;}
+      .input-area { font-size: 1rem; padding: 6px; }
+      .leaderboard, .chart { padding: 6px; }
+    }
+    .feature-bar {
+      background: #f0f7ff;
+      border-radius: 12px;
+      margin-bottom: 10px;
+      padding: 8px 16px;
+      font-size: 0.98rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+    }
+    .feature-bar .feature-btn {
+      padding: 3px 12px;
+      border-radius: 7px;
+      border: 1px solid #9cc;
+      background: #e7f9ff;
+      color: #222;
+      margin: 1px;
+      cursor: pointer;
+      font-size: 0.98rem;
+      transition: background 0.15s, color 0.15s;
+    }
+    .feature-bar .feature-btn.selected {
+      background: #0099ff;
+      color: #fff;
+      border-color: #0099ff;
+    }
+    .avatar {
+      height: 48px; width: 48px; border-radius: 50%;
+      background: #e3e3ff; margin-right: 10px;
+      display: inline-block; vertical-align: middle;
+    }
+    .avatar.animated {
+      animation: bounce 0.6s;
+    }
+    @keyframes bounce {
+      0% { transform: scale(1); }
+      35% { transform: scale(1.25); }
+      100% { transform: scale(1); }
+    }
+    .caps-warning {
+      color: #fff;
+      background: #ff4444;
+      padding: 3px 7px;
+      border-radius: 7px;
+      font-weight: bold;
+      display: none;
+      margin-bottom: 5px;
+      font-size: 1rem;
+    }
+    .custom-text-area {
+      width: 100%; min-height: 80px;
+      font-size: 1rem; margin-bottom: 5px;
+      border-radius: 8px; border: 1px solid #99c;
+      padding: 8px;
+    }
+    .distraction-free {
+      position: fixed; top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      background: #f7f7f7; z-index: 9999;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .distraction-free .typing-area, .distraction-free .input-area {
+      margin: 0!important;
+      font-size: 1.3rem;
+      box-shadow: none;
+    }
+    .streak {
+      display: inline-block;
+      background: #ffeb3b;
+      color: #222;
+      border-radius: 8px;
+      padding: 4px 10px;
+      font-weight: bold;
+      font-size: 1rem;
+      margin-left: 8px;
+    }
+    /* ...other feature-specific CSS... */
+    .virtual-keyboard {
+  margin: 16px auto;
+  max-width: 600px;
+  background: #f3f3f3;
+  padding: 16px;
+  border-radius: 12px;
+  box-shadow: 0 1px 8px rgba(0,0,0,0.08);
+}
+.vk-row {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+.vk-key {
+  margin: 2px;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 6px;
+  background: #eaeaea;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.vk-key:active, .vk-key.active {
+  background: #0099ff;
+  color: #fff;
+}
+.vk-key-space {
+  flex: 1 1 200px;
+  min-width: 100px;
+}
+.vk-key-backspace {
+  background: #ffd6d6;
+  color: #900;
+}
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>
+    <span class="avatar" id="avatar"></span>
+    Super Typing Speed Website
+    <span class="streak" id="streakCounter"></span>
+  </h1>
+  <div class="feature-bar">
+    <!-- New Features Controls -->
+    <button class="feature-btn" id="dailyChallengeBtn">Daily Challenge</button>
+    <button class="feature-btn" id="streakBtn">Show Streaks</button>
+    <button class="feature-btn" id="distractionFreeBtn">Distraction-Free</button>
+    <button class="feature-btn" id="mistakeReviewBtn">Mistake Review</button>
+    <button class="feature-btn" id="focusTimerBtn">Focus Timer</button>
+    <button class="feature-btn" id="customTextBtn">Custom Text</button>
+    <button class="feature-btn" id="sessionReplayBtn">Replay</button>
+    <!-- ...feature buttons... -->
+    <span id="capsLockWarning" class="caps-warning">Caps Lock is ON!</span>
+  </div>
+  <textarea id="customTextArea" class="custom-text-area" placeholder="Type or paste your custom text here and click 'Custom Text'" style="display:none"></textarea>
+
+  <div class="controls">
+    <select id="duration">
+      <option value="30">30s</option>
+      <option value="60">60s</option>
+      <option value="120">120s</option>
+    </select>
+    <select id="difficulty">
+      <option value="easy">Easy</option>
+      <option value="medium">Medium</option>
+      <option value="hard">Hard</option>
+    </select>
+    <select id="language">
+      <option value="en">English</option>
+      <option value="es">Spanish</option>
+    </select>
+    <button id="startBtn">Start</button>
+    <button id="pauseBtn">Pause</button>
+    <button id="resumeBtn">Resume</button>
+    <button id="resetBtn">Reset</button>
+    <button id="repeatBtn">Repeat</button>
+    <button id="exportBtn">Export CSV</button>
+    <button id="soundBtn">🔊</button>
+    <button id="themeBtn">🌙</button>
+  </div>
+  <!-- Add this checkbox to your controls for Adaptive Difficulty toggle -->
+
+  <div class="progress-bar"><div class="progress-inner" id="progress"></div></div>
+  <div class="stats">
+    <span id="wpm">WPM: 0</span>
+    <span id="accuracy">Accuracy: 100%</span>
+    <span id="errors">Errors: 0</span>
+    <span id="timer">Time: 00:00</span>
+    <span id="personalBest">Best WPM: 0</span>
+    <span id="focusTimerStatus"></span>
+  </div>
+
+  <div id="virtualKeyboard" class="virtual-keyboard" style="margin-top:18px;">
+  <!-- QWERTY layout rows -->
+  <div class="vk-row">
+    <button class="vk-key">Q</button><button class="vk-key">W</button><button class="vk-key">E</button>
+    <button class="vk-key">R</button><button class="vk-key">T</button><button class="vk-key">Y</button>
+    <button class="vk-key">U</button><button class="vk-key">I</button><button class="vk-key">O</button>
+    <button class="vk-key">P</button>
+  </div>
+  <div class="vk-row">
+    <button class="vk-key">A</button><button class="vk-key">S</button><button class="vk-key">D</button>
+    <button class="vk-key">F</button><button class="vk-key">G</button><button class="vk-key">H</button>
+    <button class="vk-key">J</button><button class="vk-key">K</button><button class="vk-key">L</button>
+  </div>
+  <div class="vk-row">
+    <button class="vk-key">Z</button><button class="vk-key">X</button><button class="vk-key">C</button>
+    <button class="vk-key">V</button><button class="vk-key">B</button>
+    <button class="vk-key">N</button><button class="vk-key">M</button>
+  </div>
+  <div class="vk-row">
+    <button class="vk-key vk-key-space">Space</button>
+    <button class="vk-key vk-key-backspace">⌫</button>
+  </div>
+</div>
+
+  <div class="typing-area" id="typingArea"></div>
+  <input type="text" class="input-area" id="inputArea" autocomplete="off" autocapitalize="off" spellcheck="false" disabled>
+
+<div id="codePracticeArea" style="display:none;margin-top:10px;">
+  <h3>JavaScript Code Typing Practice</h3>
+  <pre id="codePreview" style="background:#222;color:#fff;font-family:monospace;padding:12px;border-radius:8px;white-space:pre-wrap;"></pre>
+  <button id="runCodeBtn" style="margin-top:8px;">Run Code</button>
+  <div id="codeOutput" style="background:#f7f7f7;color:#222;padding:8px;margin-top:6px;border-radius:8px;min-height:24px;"></div>
+  <button id="exitCodePracticeBtn" style="margin-top:8px;">Exit Code Practice</button>
+</div>
+
+  <div class="mistyped">
+    <h3>Mistyped words:</h3>
+    <div id="mistypedWords"></div>
+  </div>
+  <div class="leaderboard">
+    <h3>Leaderboard (Local)</h3>
+    <ol id="leaderboardList"></ol>
+  </div>
+  <div class="chart">
+    <canvas id="wpmChart"></canvas>
+  </div>
+  <div id="themeContainer" style="display:flex;gap:10px;margin-bottom:8px;">
+    <button class="theme-btn selected" data-theme="default">Default</button>
+    <button class="theme-btn" data-theme="blue">Blue</button>
+    <button class="theme-btn" data-theme="green">Green</button>
+    <button class="theme-btn" data-theme="pink">Pink</button>
+  </div>
+  <!-- Distraction-Free Overlay -->
+  <div id="distractionOverlay" class="distraction-free" style="display:none;">
+    <div>
+      <div class="typing-area" id="dfTypingArea"></div>
+      <input type="text" class="input-area" id="dfInputArea" autocomplete="off" autocapitalize="off" spellcheck="false">
+      <button onclick="toggleDistractionFree()" style="margin-top:10px;">Exit Distraction-Free</button>
+    </div>
+  </div>
+  
+  <!-- Mistake Review Modal -->
+  <div id="mistakeReviewModal" style="display:none; position:fixed;top:0;left:0;width:100vw;height:100vh;background:#fff9e7;z-index:99999;align-items:center;justify-content:center;">
+    <div style="max-width:420px;margin:auto;padding:24px;background:#fff;border-radius:14px;">
+      <h3>Mistake Review</h3>
+      <div id="mistakeReviewContent"></div>
+      <button onclick="closeMistakeReview()" style="margin-top:14px;">Close</button>
+    </div>
+  </div>
+</div>
+<div class="motivational" id="motivational"></div>
+<script src="script.js"></script>
+</body>
+</html>
